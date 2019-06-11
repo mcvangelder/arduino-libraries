@@ -1,4 +1,5 @@
 #include <statemachine.h>
+#include <stdlib.h>
 
 StateData::StateData(int stateValue)
 {
@@ -8,7 +9,7 @@ StateData::StateData(int stateValue)
 bool StateData::isTransitionAllowed(int nextStateValue)
 {
 	bool isAllowed = false;
-	
+
 	for (int i = 0; i < _numberOfTransitions; i++)
 	{
 		int nextAllowedValue = _allowedTransistion[i]->getValue();
@@ -32,7 +33,7 @@ void StateData::setAllowedTransitions(StateData *transitions[], int numTransitio
 	_allowedTransistion = transitions;
 }
 
-StateMachine::StateMachine(StateData *validStates[], int numStates,  StateData initialState)
+StateMachine::StateMachine(StateData *validStates[], int numStates, StateData initialState)
 {
 	_validStates = validStates;
 	_numberOfStates = numStates;
@@ -65,11 +66,21 @@ bool StateMachine::setState(int stateValue)
 		StateData *state = _validStates[i];
 		if (state->getValue() == stateValue)
 		{
+			auto previousState = &_currentState;
 			_currentState = *state;
 			stateChanged = true;
-			Serial.println("State Changed");
+			if (_hasTransitionCallback)
+			{
+				_onTransition(previousState, state);
+			}
 			break;
 		}
 	}
 	return stateChanged;
+}
+
+void StateMachine::setOnTransitionCallback(void (*onTransition)(StateData *oldState, StateData *newState))
+{
+	_hasTransitionCallback = true;
+	_onTransition = onTransition;
 }
