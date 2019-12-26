@@ -22,6 +22,6 @@ public:
     ReadStatus read();
 
 private:
-    Adafruit_PN532 *nfc; //(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
+    Adafruit_PN532 *nfc;
 };
 #endif
