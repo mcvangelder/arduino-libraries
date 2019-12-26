@@ -39,7 +39,7 @@ void NFCMiFareClassicSpi::initialize()
   Serial.println("Waiting for an ISO14443A Card ...");
 }
 
-Status NFCMiFareClassicSpi::read()
+ReadStatus NFCMiFareClassicSpi::read()
 {
   ReadStatus status;
   uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0};
