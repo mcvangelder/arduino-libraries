@@ -5,7 +5,8 @@ StateData::StateData(int stateValue) : StateData::StateData(stateValue, "")
 {
 }
 
-StateData::StateData(int stateValue, const char* name) {
+StateData::StateData(int stateValue, const char *name)
+{
 	_stateValue = stateValue;
 	_name = name;
 }
@@ -31,7 +32,8 @@ int StateData::getValue()
 	return _stateValue;
 }
 
-const char* StateData::getName() {
+const char *StateData::getName()
+{
 	return _name;
 }
 
