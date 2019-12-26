@@ -5,13 +5,16 @@ class StateData
 	public:
 	StateData() { _stateValue = -1; };
 	StateData(int stateValue);
+	StateData(int stateValue, const char* name);
 	void setAllowedTransitions(StateData* stateData[], int numTransitions);
 	bool isTransitionAllowed(int nextStateValue);
 	int getValue();
+	const char* getName();
 
 	private:
 	void (*_transitionListener)(StateData, StateData);
 	int _stateValue;
+	const char* _name;
 	StateData** _allowedTransistion;
 	int _numberOfTransitions;
 };

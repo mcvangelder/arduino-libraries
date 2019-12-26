@@ -1,9 +1,13 @@
 #include <statemachine.h>
 #include <stdlib.h>
 
-StateData::StateData(int stateValue)
+StateData::StateData(int stateValue) : StateData::StateData(stateValue, "")
 {
+}
+
+StateData::StateData(int stateValue, const char* name) {
 	_stateValue = stateValue;
+	_name = name;
 }
 
 bool StateData::isTransitionAllowed(int nextStateValue)
@@ -25,6 +29,10 @@ bool StateData::isTransitionAllowed(int nextStateValue)
 int StateData::getValue()
 {
 	return _stateValue;
+}
+
+const char* StateData::getName() {
+	return _name;
 }
 
 void StateData::setAllowedTransitions(StateData *transitions[], int numTransitions)
@@ -66,12 +74,12 @@ bool StateMachine::setState(int stateValue)
 		StateData *state = _validStates[i];
 		if (state->getValue() == stateValue)
 		{
-			auto previousState = &_currentState;
+			auto previousState = _currentState;
 			_currentState = *state;
 			stateChanged = true;
 			if (_hasTransitionCallback)
 			{
-				_onTransition(previousState, state);
+				_onTransition(&previousState, state);
 			}
 			break;
 		}
