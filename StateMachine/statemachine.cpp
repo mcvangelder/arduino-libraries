@@ -1,4 +1,4 @@
-#include <statemachine.h>
+#include "statemachine.h"
 #include <stdlib.h>
 
 StateData::StateData(int stateValue) : StateData::StateData(stateValue, "")
@@ -7,17 +7,17 @@ StateData::StateData(int stateValue) : StateData::StateData(stateValue, "")
 
 StateData::StateData(int stateValue, const char *name)
 {
-	_stateValue = stateValue;
-	_name = name;
+	value = stateValue;
+	displayName = name;
 }
 
 bool StateData::isTransitionAllowed(int nextStateValue)
 {
 	bool isAllowed = false;
 
-	for (int i = 0; i < _numberOfTransitions; i++)
+	for (int i = 0; i < numberOfTransitions; i++)
 	{
-		int nextAllowedValue = _allowedTransistion[i]->getValue();
+		int nextAllowedValue = allowedTransistion[i]->getValue();
 		if (nextStateValue == nextAllowedValue)
 		{
 			isAllowed = true;
@@ -29,37 +29,42 @@ bool StateData::isTransitionAllowed(int nextStateValue)
 
 int StateData::getValue()
 {
-	return _stateValue;
+	return value;
 }
 
 const char *StateData::getName()
 {
-	return _name;
+	return displayName;
 }
 
 void StateData::setAllowedTransitions(StateData *transitions[], int numTransitions)
 {
-	_numberOfTransitions = numTransitions;
-	_allowedTransistion = transitions;
+	numberOfTransitions = numTransitions;
+	allowedTransistion = transitions;
 }
 
 StateMachine::StateMachine(StateData *validStates[], int numStates, StateData initialState)
 {
-	_validStates = validStates;
-	_numberOfStates = numStates;
+	allStates = validStates;
+	numberOfStates = numStates;
 	setState(initialState.getValue());
 }
 
 int StateMachine::getCurrentStateValue()
 {
-	return _currentState.getValue();
+	return currentState.getValue();
+}
+
+const char* StateMachine::getCurrentStateName()
+{
+	return currentState.getName();
 }
 
 bool StateMachine::transitionTo(int stateValue)
 {
 	bool transitioned = false;
 
-	if (_currentState.isTransitionAllowed(stateValue))
+	if (currentState.isTransitionAllowed(stateValue))
 	{
 		transitioned = setState(stateValue);
 	}
@@ -71,17 +76,17 @@ bool StateMachine::setState(int stateValue)
 {
 	bool stateChanged = false;
 
-	for (int i = 0; i < _numberOfStates; i++)
+	for (int i = 0; i < numberOfStates; i++)
 	{
-		StateData *state = _validStates[i];
+		StateData *state = allStates[i];
 		if (state->getValue() == stateValue)
 		{
-			auto previousState = _currentState;
-			_currentState = *state;
+			auto previousState = currentState;
+			currentState = *state;
 			stateChanged = true;
-			if (_hasTransitionCallback)
+			if (hasTransitionCallback)
 			{
-				_onTransition(&previousState, state);
+				onTransitionCallback(&previousState, state);
 			}
 			break;
 		}
@@ -91,6 +96,6 @@ bool StateMachine::setState(int stateValue)
 
 void StateMachine::setOnTransitionCallback(void (*onTransition)(StateData *oldState, StateData *newState))
 {
-	_hasTransitionCallback = true;
-	_onTransition = onTransition;
+	hasTransitionCallback = true;
+	onTransitionCallback = onTransition;
 }
