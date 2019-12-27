@@ -42,33 +42,22 @@ void NFCMiFareClassicSpi::initialize()
 ReadStatus NFCMiFareClassicSpi::read()
 {
   ReadStatus status;
-  uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0};
+  uint8_t uidRaw[] = {0,0,0,0,0,0,0};
   uint8_t uidLength;
 
-  status.success = nfc->readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+  status.success = nfc->readPassiveTargetID(PN532_MIFARE_ISO14443A, uidRaw, &uidLength);
+  status.uidRaw = uidRaw;
+  status.uidLength = uidLength;
 
   if (status.success)
   {
     // Display some basic information about the card
     Serial.println("Found an ISO14443A card");
     Serial.print("  UID Length: ");
-    Serial.print(uidLength, DEC);
+    Serial.print(status.uidLength, DEC);
     Serial.println(" bytes");
     Serial.print("  UID Value: ");
-    nfc->PrintHex(uid, uidLength);
-
-    if (uidLength == 4)
-    {
-      Serial.print("Seems to be a Mifare Classic card #");
-      // We probably have a Mifare Classic card ...
-      status.cardId = uid[0];
-      status.cardId <<= 8;
-      status.cardId |= uid[1];
-      status.cardId <<= 8;
-      status.cardId |= uid[2];
-      status.cardId <<= 8;
-      status.cardId |= uid[3];
-    }
+    nfc->PrintHex(status.uidRaw, status.uidLength);
 
     Serial.println("");
   }

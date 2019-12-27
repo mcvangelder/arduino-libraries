@@ -10,8 +10,9 @@
 
 struct ReadStatus
 {
-    uint8_t success;
-    uint32_t cardId;
+    uint8_t success = 0;
+    uint8_t *uidRaw;
+    uint8_t uidLength = 0;
 };
 
 class NFCMiFareClassicSpi
