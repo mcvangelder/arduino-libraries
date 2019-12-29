@@ -24,10 +24,10 @@ class StateMachine
 {
 public:
 	StateMachine(){};
-	StateMachine(StateData *validStates[], int numStates, StateData initialState);
+	void initialize(StateData *validStates[], int numStates, StateData initialState);
 	void setOnTransitionCallback(void (*callback)(StateData *oldState, StateData *newState));
 	int getCurrentStateValue();
-	const char* getCurrentStateName();
+	const char *getCurrentStateName();
 	bool transitionTo(int stateValue);
 
 private:
