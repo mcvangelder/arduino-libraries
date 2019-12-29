@@ -1,3 +1,5 @@
+#ifndef STATE_MACHINE_H
+#define STATE_MACHINE_H
 
 class StateData
 {
@@ -38,3 +40,4 @@ private:
 	bool hasTransitionCallback = false;
 	void (*onTransitionCallback)(StateData *oldState, StateData *newState);
 };
+#endif
