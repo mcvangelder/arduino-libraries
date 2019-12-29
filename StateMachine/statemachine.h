@@ -1,4 +1,3 @@
-#define arrayLength(array) sizeof(array) / sizeof(StateData *)
 
 class StateData
 {
