@@ -39,15 +39,9 @@ void NFCMiFareClassicSpi::initialize()
   Serial.println("Waiting for an ISO14443A Card ...");
 }
 
-ReadStatus NFCMiFareClassicSpi::read()
+uint8_t NFCMiFareClassicSpi::read(ReadStatus &status)
 {
-  ReadStatus status;
-  uint8_t uidRaw[] = {0,0,0,0,0,0,0};
-  uint8_t uidLength;
-
-  status.success = nfc->readPassiveTargetID(PN532_MIFARE_ISO14443A, uidRaw, &uidLength);
-  status.uidRaw = uidRaw;
-  status.uidLength = uidLength;
+  status.success = nfc->readPassiveTargetID(PN532_MIFARE_ISO14443A, status.uidRaw, &status.uidLength);
 
   if (status.success)
   {
@@ -60,6 +54,7 @@ ReadStatus NFCMiFareClassicSpi::read()
     nfc->PrintHex(status.uidRaw, status.uidLength);
 
     Serial.println("");
-  }
-  return status;
+ }
+  
+  return status.success;
 }
