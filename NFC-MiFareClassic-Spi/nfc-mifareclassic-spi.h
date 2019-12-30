@@ -11,7 +11,7 @@
 struct ReadStatus
 {
     uint8_t success = 0;
-    uint8_t *uidRaw;
+    uint8_t uidRaw[7] = {0, 0, 0, 0, 0, 0, 0};
     uint8_t uidLength = 0;
 };
 
@@ -20,7 +20,7 @@ class NFCMiFareClassicSpi
 public:
     NFCMiFareClassicSpi();
     void initialize();
-    ReadStatus read();
+    uint8_t read(ReadStatus &status);
 
 private:
     Adafruit_PN532 *nfc;

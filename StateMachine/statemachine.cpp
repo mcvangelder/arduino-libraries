@@ -43,7 +43,7 @@ void StateData::setAllowedTransitions(StateData *transitions[], int numTransitio
 	allowedTransistion = transitions;
 }
 
-StateMachine::StateMachine(StateData *validStates[], int numStates, StateData initialState)
+void StateMachine::initialize(StateData *validStates[], int numStates, StateData initialState)
 {
 	allStates = validStates;
 	numberOfStates = numStates;
