@@ -20,12 +20,18 @@ private:
 	int numberOfTransitions;
 };
 
+class StateChangedListener
+{
+public:
+	virtual void onStateChanged(StateData *oldState, StateData *newState);
+};
+
 class StateMachine
 {
 public:
 	StateMachine(){};
 	void initialize(StateData *validStates[], int numStates, StateData initialState);
-	void setOnTransitionCallback(void (*callback)(StateData *oldState, StateData *newState));
+	void setOnStateChangedListener(StateChangedListener *listener);
 	int getCurrentStateValue();
 	const char *getCurrentStateName();
 	bool transitionTo(int stateValue);
@@ -38,6 +44,6 @@ private:
 	StateData **allStates;
 	int numberOfStates = 0;
 	bool hasTransitionCallback = false;
-	void (*onTransitionCallback)(StateData *oldState, StateData *newState);
+	StateChangedListener *stateChangedListener;
 };
 #endif
