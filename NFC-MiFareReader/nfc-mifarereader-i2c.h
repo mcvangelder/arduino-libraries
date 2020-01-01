@@ -10,6 +10,7 @@ public:
     NFCMiFareReaderI2C();
     void initialize();
     uint8_t read(ReadStatus &status);
+    bool activateCardReader();
 
 private:
     PN532NXP *pn532;

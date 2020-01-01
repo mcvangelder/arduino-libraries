@@ -66,7 +66,7 @@ bool PN532NXP::configureSecureAccessModule()
     return (responseBuff[6] == successValue);
 }
 
-bool PN532NXP::readPassiveCardTargetId(uint8_t cardBaudeRate, uint8_t *uid, uint8_t &uidLength, uint16_t timeout)
+bool PN532NXP::setPassiveReadCardMode(uint8_t cardBaudeRate, uint16_t timeout)
 {
     uint8_t maxCards = 0x1;
     uint8_t data[2] = {maxCards, cardBaudeRate};
@@ -78,7 +78,17 @@ bool PN532NXP::readPassiveCardTargetId(uint8_t cardBaudeRate, uint8_t *uid, uint
 #endif
         return false;
     }
+    return true;
+}
 
+/*
+ * This function will read the value of the card read by the PN532 chip. It assumes that
+ * #setPassiveReadCardMode has been previously called and was successful.
+ * 
+ * This allows support for interrupt driven event handling.
+*/
+bool PN532NXP::readPassiveCardTargetId(uint8_t *uid, uint8_t &uidLength, uint16_t timeout)
+{
     if (!isReady(timeout))
     {
 #ifdef PN532NXP_DEBUG
@@ -118,7 +128,6 @@ bool PN532NXP::readPassiveCardTargetId(uint8_t cardBaudeRate, uint8_t *uid, uint
 #ifdef PN532NXP_DEBUG
     printBuffer(uid, uidLength, "PN532NXP::readPassiveCardTargetId: UID Info:");
 #endif
-
     return true;
 }
 

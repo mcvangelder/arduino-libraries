@@ -33,7 +33,8 @@ public:
     void begin();
     bool discover(uint8_t &boardVersion, uint8_t &firmwareMajor, uint8_t &firmwareMinor);
     bool configureSecureAccessModule();
-    bool readPassiveCardTargetId(uint8_t cardBaudRate, uint8_t *uid, uint8_t &uidLength, uint16_t timeout = 0);
+    bool setPassiveReadCardMode(uint8_t cardBaudeRate, uint16_t timeout = 0);
+    bool readPassiveCardTargetId(uint8_t *uid, uint8_t &uiLength, uint16_t timeout = 0);
 
 private:
     enum Commands : uint8_t

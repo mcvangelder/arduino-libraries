@@ -38,9 +38,16 @@ void NFCMiFareReaderI2C::initialize()
     }
 }
 
+bool NFCMiFareReaderI2C::activateCardReader()
+{
+    return pn532->setPassiveReadCardMode(PN532_MIFARE_ISO14443A);
+}
+
 uint8_t NFCMiFareReaderI2C::read(ReadStatus &status)
 {
-    Serial.println("Ready for an ISO14443A Card ...");
-    status.success = pn532->readPassiveCardTargetId(PN532_MIFARE_ISO14443A, status.uidRaw, status.uidLength);
+    Serial.println("Reading card");
+    status.success = pn532->readPassiveCardTargetId(status.uidRaw, status.uidLength);
+    detachInterrupt(PN532_IRQ);
+
     return status.success;
 }

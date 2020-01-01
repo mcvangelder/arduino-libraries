@@ -45,3 +45,8 @@ uint8_t NFCMiFareReader::read(ReadStatus &status)
   
   return status.success;
 }
+
+bool NFCMiFareReader::activateCardReader()
+{
+  return true;
+}
