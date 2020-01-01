@@ -13,7 +13,7 @@ struct ReadStatus
 class NFCMiFareReader
 {
 public:
-    void initialize();
+    virtual void initialize();
     uint8_t read(ReadStatus &status);
 
 protected:

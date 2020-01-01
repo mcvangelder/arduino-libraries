@@ -1,6 +1,5 @@
 #include <Wire.h>
 #include <SPI.h>
-#include <Adafruit_PN532.h>
 #include "nfc-mifarereader.h"
 
 void NFCMiFareReader::initialize()
@@ -23,7 +22,7 @@ void NFCMiFareReader::initialize()
   Serial.println((versiondata >> 8) & 0xFF, DEC);
 
   nfc->SAMConfig();
-
+  Serial.println(); Serial.println(); Serial.println();
 }
 
 uint8_t NFCMiFareReader::read(ReadStatus &status)
