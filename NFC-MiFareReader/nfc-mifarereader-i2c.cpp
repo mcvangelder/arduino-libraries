@@ -30,5 +30,9 @@ void NFCMiFareReaderI2C::initialize()
     Serial.print('.');
     Serial.println(firmwareMnr, DEC);
 
-    // TO DO: Implement and Call SecureAcessManager Config (see Adafruit PN532 Library)
+    if(! pn532->configureSecureAccessModule())
+    {
+        Serial.println("Unable to configure SAM");
+        while(1) ;
+    }
 }

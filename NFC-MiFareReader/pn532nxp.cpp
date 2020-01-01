@@ -45,6 +45,26 @@ bool PN532NXP::discover(uint8_t &boardVersion, uint8_t &firmwareMajor, uint8_t &
     return true;
 }
 
+bool PN532NXP::configureSecureAccessModule()
+{
+    auto normalMode = 0x01;
+    auto timeout = 0x14; // 50ms
+    auto useIRQ = 0x01;
+    uint8_t data[3] = {normalMode, timeout, useIRQ};
+    auto successValue = 0x15;
+
+    uint8_t responseBuff[8];
+
+    if (!ackWriteCommand(Commands::SAM_CONFIGURATION, data, 3))
+    {
+        return false;
+    }
+
+    read(responseBuff, 8);
+
+    return (responseBuff[6] == successValue);
+}
+
 void PN532NXP::read(uint8_t *buffer, uint8_t length)
 {
     uint16_t timer = 0;
@@ -62,14 +82,12 @@ void PN532NXP::read(uint8_t *buffer, uint8_t length)
     }
 }
 
-void PN532NXP::writeCommand(PN532NXP::Commands command)
+void PN532NXP::writeCommand(PN532NXP::Commands command, uint8_t *data, uint8_t dataLength)
 {
     uint8_t checksum;
 
-    // "Commands" being an enum will never have a size greater than 255 bytes,
-    // force conversion of long to byte
-    auto numBytes = (byte)sizeof(command);
-    numBytes = numBytes < 2 ? numBytes + 1 : numBytes;
+    auto numBytes = 1; // each command is 1 byte
+    numBytes += dataLength + 1;
 
     PN532NXP::Commands *cmd = &command;
 
@@ -85,43 +103,57 @@ void PN532NXP::writeCommand(PN532NXP::Commands command)
     WIRE.write(PN532_HOSTTOPN532);
     checksum += PN532_HOSTTOPN532;
 
-    Serial.print("writeCommand: 0x");Serial.println(command, HEX);
-    Serial.print(F(" 0x"));
+#ifdef PN532NXP_DEBUG
+    Serial.print("writeCommand: 0x");
+    Serial.println(command, HEX);
+    Serial.print(F("> 0x"));
     Serial.print((byte)PN532_PREAMBLE, HEX);
     Serial.print(F(" 0x"));
     Serial.print((byte)PN532_PREAMBLE, HEX);
     Serial.print(F(" 0x"));
     Serial.print((byte)PN532_STARTCODE2, HEX);
-    Serial.print(F(" 0x"));
+    Serial.print(F(" => 0x"));
     Serial.print((byte)numBytes, HEX);
     Serial.print(F(" 0x"));
     Serial.print((byte)(~numBytes + 1), HEX);
     Serial.print(F(" 0x"));
     Serial.print((byte)PN532_HOSTTOPN532, HEX);
+#endif
 
-    for (uint8_t i = 0; i < numBytes - 1; i++)
+    WIRE.write(cmd[0]);
+    checksum += cmd[0];
+#ifdef PN532NXP_DEBUG
+    Serial.print(F(" -> 0x"));
+    Serial.print(cmd[0], HEX);
+#endif
+
+    for (int i = 0; i < dataLength; i++)
     {
-        WIRE.write(cmd[i]);
-        checksum += cmd[i];
-        Serial.print(F(" 0x"));
-        Serial.print((byte)cmd[i], HEX);
-    }
+        WIRE.write(data[i]);
+        checksum += data[i];
+#ifdef PN532NXP_DEBUG
+        Serial.print(F(" ** 0x"));
+        Serial.print(data[i], HEX);
+#endif
+}
 
     WIRE.write((byte)~checksum);
     WIRE.write((byte)PN532_POSTAMBLE);
 
-    WIRE.endTransmission();
-
+#ifdef PN532NXP_DEBUG
     Serial.print(F(" 0x"));
     Serial.print((byte)~checksum, HEX);
     Serial.print(F(" 0x"));
     Serial.print((byte)PN532_POSTAMBLE, HEX);
-    Serial.println();
+    Serial.println(" <");
+#endif
+
+    WIRE.endTransmission();
 }
 
-bool PN532NXP::ackWriteCommand(PN532NXP::Commands command, uint16_t timeout)
+bool PN532NXP::ackWriteCommand(PN532NXP::Commands command, uint8_t *data, uint8_t dataLength, uint16_t timeout)
 {
-    writeCommand(command);
+    writeCommand(command, data, dataLength);
 
     if (!isReady(timeout))
     {
@@ -159,7 +191,7 @@ bool PN532NXP::isAcknowledged()
     read(buff, 6);
 
     auto isEqual = true;
-    for(int i = 0; i < 6; i++)
+    for (int i = 0; i < 6; i++)
     {
         isEqual &= (buff[i] == PN532_ACK_SEQUENCE[i]);
     }
@@ -169,6 +201,7 @@ bool PN532NXP::isAcknowledged()
 
 void PN532NXP::printBuffer(uint8_t *buffer, uint8_t length)
 {
+#ifdef PN532NXP_DEBUG
     for (int i = 0; i < length; i++)
     {
         Serial.print(F(" 0x"));
@@ -176,4 +209,5 @@ void PN532NXP::printBuffer(uint8_t *buffer, uint8_t length)
         Serial.print(" ");
     }
     Serial.println();
+#endif
 }
