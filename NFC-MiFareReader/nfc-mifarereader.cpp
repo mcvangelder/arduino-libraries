@@ -1,22 +1,9 @@
 #include <Wire.h>
 #include <SPI.h>
-#include <Adafruit_PN532.h>
-#include "nfc-mifareclassic-spi.h"
+#include "nfc-mifarereader.h"
 
-NFCMiFareClassicSpi::NFCMiFareClassicSpi()
+void NFCMiFareReader::initialize()
 {
-  nfc = new Adafruit_PN532(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
-}
-
-void NFCMiFareClassicSpi::initialize()
-{
-#ifndef ESP8266
-  while (!Serial)
-    ; // for Leonardo/Micro/Zero
-#endif
-  Serial.begin(115200);
-  Serial.println("Hello!");
-
   nfc->begin();
 
   uint32_t versiondata = nfc->getFirmwareVersion();
@@ -35,12 +22,12 @@ void NFCMiFareClassicSpi::initialize()
   Serial.println((versiondata >> 8) & 0xFF, DEC);
 
   nfc->SAMConfig();
-
-  Serial.println("Waiting for an ISO14443A Card ...");
+  Serial.println(); Serial.println(); Serial.println();
 }
 
-uint8_t NFCMiFareClassicSpi::read(ReadStatus &status)
+uint8_t NFCMiFareReader::read(ReadStatus &status)
 {
+  Serial.println("Waiting for an ISO14443A Card ...");
   status.success = nfc->readPassiveTargetID(PN532_MIFARE_ISO14443A, status.uidRaw, &status.uidLength);
 
   if (status.success)
@@ -57,4 +44,9 @@ uint8_t NFCMiFareClassicSpi::read(ReadStatus &status)
  }
   
   return status.success;
+}
+
+bool NFCMiFareReader::activateCardReader()
+{
+  return true;
 }

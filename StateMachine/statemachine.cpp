@@ -84,9 +84,9 @@ bool StateMachine::setState(int stateValue)
 			auto previousState = currentState;
 			currentState = *state;
 			stateChanged = true;
-			if (hasTransitionCallback)
+			if (stateChangedListener != NULL)
 			{
-				onTransitionCallback(&previousState, state);
+				stateChangedListener->onStateChanged(&previousState, state);
 			}
 			break;
 		}
@@ -94,8 +94,7 @@ bool StateMachine::setState(int stateValue)
 	return stateChanged;
 }
 
-void StateMachine::setOnTransitionCallback(void (*onTransition)(StateData *oldState, StateData *newState))
+void StateMachine::setOnStateChangedListener(StateChangedListener *listener)
 {
-	hasTransitionCallback = true;
-	onTransitionCallback = onTransition;
+	stateChangedListener = listener;
 }
