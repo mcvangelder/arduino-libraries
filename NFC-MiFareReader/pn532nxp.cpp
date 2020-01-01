@@ -34,8 +34,9 @@ bool PN532NXP::discover(uint8_t &boardVersion, uint8_t &firmwareMajor, uint8_t &
 
     read(buffer, 12);
 
-    Serial.println("PN532NXP::discover");
-    printBuffer(buffer, 12);
+#ifdef PN532NXP_DEBUG
+    printBuffer(buffer, 12, "PN532NXP::discover");
+#endif
 
     uint8_t offset = 7;
     boardVersion = buffer[offset++];
@@ -47,11 +48,11 @@ bool PN532NXP::discover(uint8_t &boardVersion, uint8_t &firmwareMajor, uint8_t &
 
 bool PN532NXP::configureSecureAccessModule()
 {
-    auto normalMode = 0x01;
-    auto timeout = 0x14; // 50ms
-    auto useIRQ = 0x01;
+    uint8_t normalMode = 0x01;
+    uint8_t timeout = 0x14; // 50ms
+    uint8_t useIRQ = 0x01;
     uint8_t data[3] = {normalMode, timeout, useIRQ};
-    auto successValue = 0x15;
+    uint8_t successValue = 0x15;
 
     uint8_t responseBuff[8];
 
@@ -65,6 +66,63 @@ bool PN532NXP::configureSecureAccessModule()
     return (responseBuff[6] == successValue);
 }
 
+bool PN532NXP::readPassiveCardTargetId(uint8_t cardBaudeRate, uint8_t *uid, uint8_t &uidLength, uint16_t timeout)
+{
+    uint8_t maxCards = 0x1;
+    uint8_t data[2] = {maxCards, cardBaudeRate};
+
+    if (!ackWriteCommand(Commands::INLIST_PASSIVE_TARGET, data, 2, timeout))
+    {
+#ifdef PN532NXP_DEBUG
+        Serial.println("PN532NXP::readPassiveCardTargetId: Unable to confirm command received");
+#endif
+        return false;
+    }
+
+    if (!isReady(timeout))
+    {
+#ifdef PN532NXP_DEBUG
+        Serial.println("PN532NXP::readPassiveCardTargetId: IRQ Timeout!!!");
+#endif
+        return false;
+    }
+
+    uint8_t response[20];
+    read(response, 20);
+
+    /* ISO14443A card response should be in the following format:
+
+    byte            Description
+    -------------   ------------------------------------------
+    b0..6           Frame header and preamble
+    b7              Tags Found
+    b8              Tag Number
+    b9..10          SENS_RES
+    b11             SEL_RES
+    b12             NFCID Length
+    b13..NFCIDLen   NFCID                                      */
+
+    auto numTags = response[7];
+    if (numTags != 1)
+    {
+        return false;
+    }
+
+    uidLength = response[12];
+    auto offset = 13;
+    for (uint8_t i = 0; i < uidLength; i++)
+    {
+        uid[i] = response[offset + i];
+    }
+
+#ifdef PN532NXP_DEBUG
+    printBuffer(uid, uidLength, "PN532NXP::readPassiveCardTargetId: UID Info:");
+#endif
+
+    return true;
+}
+
+// Begin private Functions
 void PN532NXP::read(uint8_t *buffer, uint8_t length)
 {
     uint16_t timer = 0;
@@ -104,7 +162,7 @@ void PN532NXP::writeCommand(PN532NXP::Commands command, uint8_t *data, uint8_t d
     checksum += PN532_HOSTTOPN532;
 
 #ifdef PN532NXP_DEBUG
-    Serial.print("writeCommand: 0x");
+    Serial.print("PN532NXP::writeCommand: 0x");
     Serial.println(command, HEX);
     Serial.print(F("> 0x"));
     Serial.print((byte)PN532_PREAMBLE, HEX);
@@ -135,7 +193,7 @@ void PN532NXP::writeCommand(PN532NXP::Commands command, uint8_t *data, uint8_t d
         Serial.print(F(" ** 0x"));
         Serial.print(data[i], HEX);
 #endif
-}
+    }
 
     WIRE.write((byte)~checksum);
     WIRE.write((byte)PN532_POSTAMBLE);
@@ -155,11 +213,21 @@ bool PN532NXP::ackWriteCommand(PN532NXP::Commands command, uint8_t *data, uint8_
 {
     writeCommand(command, data, dataLength);
 
+#ifdef PN532NXP_DEBUG
+    Serial.print("PN532NXP::ackWriteCommand: Waiting for ack... Timeout (ms): "); Serial.println(timeout);
+#endif
+
     if (!isReady(timeout))
     {
+#ifdef PN532NXP_DEBUG
+        Serial.println("PN532NXP::ackWriteCommand: No response from board.");
+#endif
         return false;
     }
 
+#ifdef PN532NXP_DEBUG
+    Serial.println("PN532NXP::ackWriteCommand: IRQ Received");
+#endif
     return isAcknowledged();
 }
 
@@ -199,9 +267,10 @@ bool PN532NXP::isAcknowledged()
     return isEqual;
 }
 
-void PN532NXP::printBuffer(uint8_t *buffer, uint8_t length)
+void PN532NXP::printBuffer(uint8_t *buffer, uint8_t length, const char* header)
 {
 #ifdef PN532NXP_DEBUG
+    Serial.println(header);
     for (int i = 0; i < length; i++)
     {
         Serial.print(F(" 0x"));

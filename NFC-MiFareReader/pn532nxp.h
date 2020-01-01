@@ -2,6 +2,7 @@
 #define PN532NXP_H
 
 #include <Arduino.h>
+// #define PN532NXP_DEBUG
 
 #define PN532_IRQ (2)
 #define PN532_RESET (3)
@@ -32,12 +33,14 @@ public:
     void begin();
     bool discover(uint8_t &boardVersion, uint8_t &firmwareMajor, uint8_t &firmwareMinor);
     bool configureSecureAccessModule();
+    bool readPassiveCardTargetId(uint8_t cardBaudRate, uint8_t *uid, uint8_t &uidLength, uint16_t timeout = 0);
 
 private:
     enum Commands : uint8_t
     {
         GET_FIRMWARE_VERSION = 0x02,
-        SAM_CONFIGURATION = 0x14
+        SAM_CONFIGURATION = 0x14,
+        INLIST_PASSIVE_TARGET = 0x4A
     };
     uint8_t m_irqPin;
     uint8_t m_resetPin;
@@ -49,6 +52,6 @@ private:
     bool isReady(uint16_t timeout);
     bool isAcknowledged();
 
-    void printBuffer(uint8_t *buffer, uint8_t length);
+    void printBuffer(uint8_t *buffer, uint8_t length, const char* header);
 };
 #endif

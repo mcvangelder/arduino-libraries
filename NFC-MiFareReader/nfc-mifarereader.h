@@ -14,7 +14,7 @@ class NFCMiFareReader
 {
 public:
     virtual void initialize();
-    uint8_t read(ReadStatus &status);
+    virtual uint8_t read(ReadStatus &status);
 
 protected:
     Adafruit_PN532 *nfc;

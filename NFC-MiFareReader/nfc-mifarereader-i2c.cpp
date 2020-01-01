@@ -30,9 +30,17 @@ void NFCMiFareReaderI2C::initialize()
     Serial.print('.');
     Serial.println(firmwareMnr, DEC);
 
-    if(! pn532->configureSecureAccessModule())
+    if (!pn532->configureSecureAccessModule())
     {
         Serial.println("Unable to configure SAM");
-        while(1) ;
+        while (1)
+            ;
     }
+}
+
+uint8_t NFCMiFareReaderI2C::read(ReadStatus &status)
+{
+    Serial.println("Ready for an ISO14443A Card ...");
+    status.success = pn532->readPassiveCardTargetId(PN532_MIFARE_ISO14443A, status.uidRaw, status.uidLength);
+    return status.success;
 }
