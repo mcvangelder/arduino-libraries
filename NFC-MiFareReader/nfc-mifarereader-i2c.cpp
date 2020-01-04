@@ -3,9 +3,9 @@
 
 #include <Wire.h>
 
-NFCMiFareReaderI2C::NFCMiFareReaderI2C()
+NFCMiFareReaderI2C::NFCMiFareReaderI2C(uint8_t pn532IRQ, uint8_t pn532ResetPin)
 {
-    pn532 = new PN532NXP(PN532_IRQ, PN532_RESET);
+    pn532 = new PN532NXP(pn532IRQ, pn532ResetPin);
 }
 
 void NFCMiFareReaderI2C::initialize()
