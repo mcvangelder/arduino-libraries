@@ -14,16 +14,16 @@ StateData::StateData(int stateValue, const char *name)
 bool StateData::isTransitionAllowed(int nextStateValue)
 {
 	bool isAllowed = false;
-
 	for (int i = 0; i < numberOfTransitions; i++)
 	{
-		int nextAllowedValue = allowedTransistion[i]->getValue();
+		int nextAllowedValue = allowedTransitions[i]->getValue();
 		if (nextStateValue == nextAllowedValue)
 		{
 			isAllowed = true;
 			break;
 		}
 	}
+
 	return isAllowed;
 }
 
@@ -40,31 +40,30 @@ const char *StateData::getName()
 void StateData::setAllowedTransitions(StateData *transitions[], int numTransitions)
 {
 	numberOfTransitions = numTransitions;
-	allowedTransistion = transitions;
+	allowedTransitions = transitions;
 }
 
-void StateMachine::initialize(StateData *validStates[], int numStates, StateData initialState)
+void StateMachine::initialize(StateData *validStates[], int numStates, StateData *initialState)
 {
 	allStates = validStates;
 	numberOfStates = numStates;
-	setState(initialState.getValue());
+	setState(initialState->getValue());
 }
 
 int StateMachine::getCurrentStateValue()
 {
-	return currentState.getValue();
+	return currentState->getValue();
 }
 
 const char* StateMachine::getCurrentStateName()
 {
-	return currentState.getName();
+	return currentState->getName();
 }
 
 bool StateMachine::transitionTo(int stateValue)
 {
 	bool transitioned = false;
-
-	if (currentState.isTransitionAllowed(stateValue))
+	if (currentState->isTransitionAllowed(stateValue))
 	{
 		transitioned = setState(stateValue);
 	}
@@ -82,11 +81,11 @@ bool StateMachine::setState(int stateValue)
 		if (state->getValue() == stateValue)
 		{
 			auto previousState = currentState;
-			currentState = *state;
+			currentState = state;
 			stateChanged = true;
 			if (stateChangedListener != NULL)
 			{
-				stateChangedListener->onStateChanged(&previousState, state);
+				stateChangedListener->onStateChanged(previousState, state);
 			}
 			break;
 		}
