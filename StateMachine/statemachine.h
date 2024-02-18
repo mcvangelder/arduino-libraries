@@ -4,7 +4,6 @@
 class StateData
 {
 public:
-	StateData() { value = -1; };
 	StateData(int stateValue);
 	StateData(int stateValue, const char *name);
 	void setAllowedTransitions(StateData *stateData[], int numTransitions);
@@ -16,7 +15,7 @@ private:
 	void (*transitionListener)(StateData, StateData);
 	int value;
 	const char *displayName;
-	StateData **allowedTransistion;
+	StateData **allowedTransitions;
 	int numberOfTransitions;
 };
 
@@ -30,7 +29,7 @@ class StateMachine
 {
 public:
 	StateMachine(){};
-	void initialize(StateData *validStates[], int numStates, StateData initialState);
+	void initialize(StateData *validStates[], int numStates, StateData *initialState);
 	void setOnStateChangedListener(StateChangedListener *listener);
 	int getCurrentStateValue();
 	const char *getCurrentStateName();
@@ -38,9 +37,9 @@ public:
 
 private:
 	bool setState(int stateValue);
-	void onTransition(StateData oldState, StateData newState){};
+	void onTransition(StateData* oldState, StateData* newState){};
 
-	StateData currentState;
+	StateData* currentState = new StateData(0);
 	StateData **allStates;
 	int numberOfStates = 0;
 	bool hasTransitionCallback = false;
